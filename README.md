@@ -4,7 +4,7 @@ A omnifocus plugin to seamlessly start toggl timers from inside OmniFocus
 ## What it does
 
 
-![Example](img/Dec-29-2020 18-58-28.gif)
+![Example](img/Dec-29-2020-18-58-28.gif)
 
 
 When you highlight a task in OmniFocus and then kick off this automation, a timer will be started with:
