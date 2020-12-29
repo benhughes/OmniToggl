@@ -1,0 +1,212 @@
+/*{
+  "type": "action",
+  "targets": ["omnifocus"],
+  "author": "Ben Hughes",
+  "identifier": "com.github.benhughes.of-start-toggl-timer",
+  "version": "1.0",
+  "description": "This action will start a timer on the highlighted task using toggl.",
+  "label": "Start Timer",
+  "shortLabel": "Start Toggle Timer"
+}*/
+
+(() => {
+  // Replace the string below with your API Token found here: https://track.toggl.com/profile
+  const TOGGL_AUTH_TOKEN = 'REPLACE_ME';
+  // Name of the tag we use to assign what you're working on (this makes it easier to reset the changes made to the name)
+  const TRACKING_TAG_NAME = 'working-on';
+  // this is the name prefix so it's easy to identify what you're working on. Replace this if you would like something different
+  const TRACKING_NAME_PREFIX = '🎯';
+
+  const AuthHeader = `Basic ${btoa(`${TOGGL_AUTH_TOKEN}:api_token`)}`;
+
+  const buildErrorObject = (r) => ({
+    statusCode: r.statusCode,
+    data: r.bodyString,
+  });
+
+  async function startTogglTimer(timeEntry) {
+    const fetchRequest = new URL.FetchRequest();
+    fetchRequest.bodyData = Data.fromString(
+      JSON.stringify({
+        time_entry: timeEntry,
+      })
+    );
+    fetchRequest.method = 'POST';
+    fetchRequest.headers = {
+      Authorization: AuthHeader,
+      ['Content-Type']: 'application/json',
+    };
+    fetchRequest.url = URL.fromString(
+      'https://www.toggl.com/api/v8/time_entries/start'
+    );
+    const r = await fetchRequest.fetch();
+
+    if (r.statusCode !== 200) {
+      console.log('here');
+      throw buildErrorObject(r);
+    }
+
+    return JSON.parse(r.bodyString).data;
+  }
+
+  async function createTogglProject(name) {
+    const fetchRequest = new URL.FetchRequest();
+    fetchRequest.bodyData = Data.fromString(JSON.stringify({project: {name}}));
+    fetchRequest.method = 'POST';
+    fetchRequest.headers = {
+      Authorization: AuthHeader,
+      ['Content-Type']: 'application/json',
+    };
+    fetchRequest.url = URL.fromString(
+      'https://api.track.toggl.com/api/v8/projects'
+    );
+    const r = await fetchRequest.fetch();
+
+    if (r.statusCode !== 200) {
+      throw buildErrorObject(r);
+    }
+
+    return JSON.parse(r.bodyString).data;
+  }
+
+  async function getTogglProjects() {
+    const fetchRequest = new URL.FetchRequest();
+    fetchRequest.method = 'GET';
+    fetchRequest.headers = {
+      Authorization: AuthHeader,
+      ['Content-Type']: 'application/json',
+    };
+    fetchRequest.url = URL.fromString(
+      `https://api.track.toggl.com/api/v8/me?with_related_data=true`
+    );
+    const r = await fetchRequest.fetch();
+
+    if (r.statusCode !== 200) {
+      throw buildErrorObject(r);
+    }
+
+    return JSON.parse(r.bodyString).data.projects;
+  }
+
+  async function log(message, title = 'Log') {
+    const a = new Alert(title, message);
+    a.addOption('OK');
+    await a.show();
+  }
+
+  // Main action
+  var action = new PlugIn.Action(async function (selection) {
+    try {
+      let trackingTag = flattenedTags.find((t) => t.name === TRACKING_TAG_NAME);
+
+      if (!trackingTag) {
+        trackingTag = new Tag(TRACKING_TAG_NAME);
+      }
+
+      trackingTag.tasks.forEach((task) => {
+        if (task.name.startsWith(TRACKING_NAME_PREFIX)) {
+          task.name = task.name.replace(TRACKING_NAME_PREFIX, '');
+        }
+        task.removeTag(trackingTag);
+      });
+
+      let projects = [];
+
+      try {
+        projects = await getTogglProjects();
+      } catch (e) {
+        await log(
+          'An error occurred getting projects',
+          'See console for more info'
+        );
+        console.log(e);
+      }
+
+      const task = selection.tasks[0];
+      let projectName = task.containingProject && task.containingProject.name;
+
+      const toggleProject = projects.find(
+        (p) => p.name.trim().toLowerCase() === projectName.trim().toLowerCase()
+      );
+
+      let taskName = task.name;
+      let pid;
+      if (!projectName) {
+        pid = null;
+      } else if (!toggleProject) {
+        console.log(`project not found creating new ${projectName} project`);
+        try {
+          const r = await createTogglProject(projectName);
+          console.log(`project created id: ${r.id}`);
+          pid = r.id;
+        } catch (e) {
+          console.log(`Error creating project ${projectName}`);
+          console.log(e);
+        }
+      } else {
+        pid = toggleProject.id;
+      }
+      console.log('pid is: ', pid);
+
+      const taskTags = task.tags.map((t) => t.name);
+
+      try {
+        const r = await startTogglTimer({
+          description: taskName,
+          created_with: 'omnifocus',
+          tags: taskTags,
+          pid,
+        });
+        task.name = TRACKING_NAME_PREFIX + task.name;
+        task.addTag(trackingTag);
+        console.log('Timer started successfully', JSON.stringify(r));
+      } catch (e) {
+        await log('An error occurred', 'See console for more info');
+        console.log(JSON.stringify(e, null, 2));
+      }
+    } catch (e) {
+      await log('An error occurred', 'See console for more info');
+      console.log(JSON.stringify(e, null, 2));
+    }
+  });
+
+  action.validate = function (selection, sender) {
+    // selection options: tasks, projects, folders, tags
+    return selection.tasks.length === 1;
+  };
+
+  // the following is a pollyfill for base64 taken from https://github.com/MaxArt2501/base64-js/blob/master/base64.js
+  function btoa(stringParam) {
+    const b64 =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+    const string = String(stringParam);
+    var bitmap,
+      a,
+      b,
+      c,
+      result = '',
+      i = 0,
+      rest = string.length % 3; // To determine the final padding
+
+    for (; i < string.length; ) {
+      if (
+        (a = string.charCodeAt(i++)) > 255 ||
+        (b = string.charCodeAt(i++)) > 255 ||
+        (c = string.charCodeAt(i++)) > 255
+      ) {
+        throw "Failed to execute 'btoa' on 'Window': The string to be encoded contains characters outside of the Latin1 range.";
+      }
+
+      bitmap = (a << 16) | (b << 8) | c;
+      result +=
+        b64.charAt((bitmap >> 18) & 63) +
+        b64.charAt((bitmap >> 12) & 63) +
+        b64.charAt((bitmap >> 6) & 63) +
+        b64.charAt(bitmap & 63);
+    }
+    // If there's need of padding, replace the last 'A's with equal signs
+    return rest ? result.slice(0, rest - 3) + '==='.substring(rest) : result;
+  }
+
+  return action;
+})();
