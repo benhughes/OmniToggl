@@ -1,5 +1,5 @@
 # of-start-toggl-timer
-A omnifocus plugin to seamlessly start toggl timers from inside OmniFocus
+A omnifocus plugin to seamlessly start [Toggl](https://track.toggl.com/timer) timers from inside [OmniFocus](https://www.omnigroup.com/omnifocus/)
 
 ## What it does
 
@@ -10,12 +10,12 @@ A omnifocus plugin to seamlessly start toggl timers from inside OmniFocus
 When you highlight a task in OmniFocus and then kick off this automation, a timer will be started with:
 - Description as the name of the task
 - Tags copied over from OmniFocus
-- Project used from the task the project is contained in with OmniFocus. Will create a new Project if the project doesn't exist
+- Project used from the task the project is contained in within OmniFocus. The script will create a new Project if the project doesn't exist in Toggl.
 
 
 ## How to install on Mac
 1. Download latest release from [here](https://github.com/benhughes/of-start-toggl-timer/releases)
-2. Open the file called `of-start-toggle-timer.omnifocusjs` this should open the file in OmniFocus
+2. Unzip and open the file called `of-start-toggle-timer.omnifocusjs` this should open the file in OmniFocus
 3. Choose if you would like to install on Mac (to only use locally) or "OmniFocus in iCloud Drive" (to make it available across platforms (including iPhone and iPad)
 4. Choose Automation > Configure in the menu
 5. Choose `of-start-toggle-timer` in menu and click `Reveal in Finder` 
