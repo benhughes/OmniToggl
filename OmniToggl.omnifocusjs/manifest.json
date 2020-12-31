@@ -11,9 +11,6 @@
   ],
   "libraries": [
     {
-      "identifier": "config"
-    },
-    {
       "identifier": "common"
     }
   ]

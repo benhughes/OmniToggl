@@ -1,38 +1,21 @@
-/*{
-  "type": "action",
-  "targets": ["omnifocus"],
-  "author": "Ben Hughes",
-  "identifier": "com.github.benhughes.of-start-toggl-timer",
-  "version": "1.0",
-  "description": "This action will start a timer on the highlighted task using toggl.",
-  "label": "Start Timer",
-  "shortLabel": "Start Toggle Timer"
-}*/
-
 (() => {
   // Main action
-  var action = new PlugIn.Action(async function (selection) {
+  const action = new PlugIn.Action(async function startTogglTimerAction(
+    selection,
+  ) {
     const {
-      config: {TRACKING_TAG_NAME, TRACKING_NAME_PREFIX},
+      config: { TRACKING_TAG_NAME, TRACKING_NAME_PREFIX },
       startTogglTimer,
       createTogglProject,
       getTogglProjects,
+      resetTasks,
       log,
     } = this.common;
 
+    const trackingTag = flattenedTags.find((t) => t.name === TRACKING_TAG_NAME);
+
     try {
-      let trackingTag = flattenedTags.find((t) => t.name === TRACKING_TAG_NAME);
-
-      if (!trackingTag) {
-        trackingTag = new Tag(TRACKING_TAG_NAME);
-      }
-
-      trackingTag.tasks.forEach((task) => {
-        if (task.name.startsWith(TRACKING_NAME_PREFIX)) {
-          task.name = task.name.replace(TRACKING_NAME_PREFIX, '');
-        }
-        task.removeTag(trackingTag);
-      });
+      resetTasks();
 
       let projects = [];
 
@@ -41,19 +24,19 @@
       } catch (e) {
         await log(
           'An error occurred getting projects',
-          'See console for more info'
+          'See console for more info',
         );
         console.log(e);
       }
 
       const task = selection.tasks[0];
-      let projectName = task.containingProject && task.containingProject.name;
+      const projectName = task.containingProject && task.containingProject.name;
 
       const toggleProject = projects.find(
-        (p) => p.name.trim().toLowerCase() === projectName.trim().toLowerCase()
+        (p) => p.name.trim().toLowerCase() === projectName.trim().toLowerCase(),
       );
 
-      let taskName = task.name;
+      const taskName = task.name;
       let pid;
       if (!projectName) {
         pid = null;
@@ -90,11 +73,12 @@
       }
     } catch (e) {
       await log('An error occurred', 'See console for more info');
+      console.log(e);
       console.log(JSON.stringify(e, null, 2));
     }
   });
 
-  action.validate = function (selection, sender) {
+  action.validate = function startTogglTimerValidate(selection) {
     // selection options: tasks, projects, folders, tags
     return selection.tasks.length === 1;
   };
