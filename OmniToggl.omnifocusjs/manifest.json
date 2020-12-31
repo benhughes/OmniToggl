@@ -1,0 +1,20 @@
+{
+  "defaultLocale": "en",
+  "author": "Ben Hughes",
+  "identifier": "com.github.benhughes.OmniToggl",
+  "version": "1.0",
+  "description": "This action will start a timer on the highlighted task using toggl.",
+  "actions": [
+    {
+      "identifier": "startTogglTimer"
+    }
+  ],
+  "libraries": [
+    {
+      "identifier": "config"
+    },
+    {
+      "identifier": "common"
+    }
+  ]
+}
