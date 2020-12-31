@@ -69,8 +69,46 @@
     const r = await fetchRequest.fetch();
 
     if (r.statusCode !== 200) {
-      // eslint-disable-next-line no-console
-      console.log('here');
+      throw buildErrorObject(r);
+    }
+
+    return JSON.parse(r.bodyString).data;
+  };
+
+  dependencyLibrary.getCurrentTogglTimer = async function getCurrentTogglTimer() {
+    const fetchRequest = new URL.FetchRequest();
+
+    fetchRequest.method = 'GET';
+    fetchRequest.headers = {
+      Authorization: AuthHeader,
+      'Content-Type': 'application/json',
+    };
+    fetchRequest.url = URL.fromString(
+      'https://www.toggl.com/api/v8/time_entries/current',
+    );
+    const r = await fetchRequest.fetch();
+
+    if (r.statusCode !== 200) {
+      throw buildErrorObject(r);
+    }
+
+    return JSON.parse(r.bodyString).data;
+  };
+
+  dependencyLibrary.stopTogglTimer = async function stopTogglTimer(id) {
+    const fetchRequest = new URL.FetchRequest();
+
+    fetchRequest.method = 'PUT';
+    fetchRequest.headers = {
+      Authorization: AuthHeader,
+      'Content-Type': 'application/json',
+    };
+    fetchRequest.url = URL.fromString(
+      `https://www.toggl.com/api/v8/time_entries/${id}/stop`
+    );
+    const r = await fetchRequest.fetch();
+
+    if (r.statusCode !== 200) {
       throw buildErrorObject(r);
     }
 

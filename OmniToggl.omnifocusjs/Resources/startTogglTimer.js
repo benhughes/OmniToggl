@@ -48,7 +48,7 @@
           pid = r.id;
         } catch (e) {
           console.log(`Error creating project ${projectName}`);
-          console.log(e);
+          console.log(JSON.stringify(e, null, 2));
         }
       } else {
         pid = toggleProject.id;
