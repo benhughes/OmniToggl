@@ -10,7 +10,6 @@
 
     try {
       const currentTimer = await getCurrentTogglTimer();
-      console.log(JSON.stringify(currentTimer, null, 2));
       if (currentTimer) {
         await stopTogglTimer(currentTimer.id);
       }

@@ -1,8 +1,8 @@
-/* eslint-disable no-bitwise */
-/* eslint-disable no-plusplus */
+/* eslint-disable no-bitwise, no-plusplus */
+
 (() => {
   // Replace the string below with your API Token found here: https://track.toggl.com/profile
-  const TOGGL_AUTH_TOKEN = '866a274a2205d931b4ec2a9ab8140bc0';
+  const TOGGL_AUTH_TOKEN = 'REPLACE_ME';
   // Name of the tag we use to assign what you're working on
   // (this makes it easier to reset the changes made to the name)
   const TRACKING_TAG_NAME = 'working-on';
@@ -104,7 +104,7 @@
       'Content-Type': 'application/json',
     };
     fetchRequest.url = URL.fromString(
-      `https://www.toggl.com/api/v8/time_entries/${id}/stop`
+      `https://www.toggl.com/api/v8/time_entries/${id}/stop`,
     );
     const r = await fetchRequest.fetch();
 
