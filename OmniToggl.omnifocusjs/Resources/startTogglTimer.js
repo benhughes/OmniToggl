@@ -32,7 +32,7 @@
       const task = selection.tasks[0];
       const projectName = task.containingProject && task.containingProject.name;
 
-      const toggleProject = projects.find(
+      const toggleProject = (projects || []).find(
         (p) => p.name.trim().toLowerCase() === projectName.trim().toLowerCase(),
       );
 
