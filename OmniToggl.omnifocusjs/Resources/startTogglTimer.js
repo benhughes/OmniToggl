@@ -27,7 +27,6 @@
 
       try {
         const togglDetails = await getTogglDetails();
-        console.log(JSON.stringify(togglDetails,null, 2))
         projects = togglDetails.projects;
         clients = togglDetails.clients;
         wid = togglDetails.workspaces[0].id;
