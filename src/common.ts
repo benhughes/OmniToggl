@@ -1,5 +1,7 @@
 /* eslint-disable no-bitwise, no-plusplus */
 
+declare var flattenedTags:TagArray;
+
 (() => {
   // Replace the string below with your API Token found here: https://track.toggl.com/profile
   const TOGGL_AUTH_TOKEN = 'REPLACE_ME';
@@ -11,7 +13,7 @@
   const TRACKING_NAME_PREFIX = '🎯';
 
   // the following is a pollyfill for base64 taken from https://github.com/MaxArt2501/base64-js/blob/master/base64.js
-  function btoa(stringParam) {
+  function btoa(stringParam: string) {
     const b64 =
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
     const string = String(stringParam);
@@ -49,6 +51,31 @@
 
   const dependencyLibrary = new PlugIn.Library(new Version('1.0'));
 
+  async function makeTogglRequest(
+    url,
+    { headers = {}, method = 'GET', bodyData = null } = {},
+  ) {
+    const fetchRequest = new URL.FetchRequest();
+
+    fetchRequest.method = method;
+    fetchRequest.headers = {
+      Authorization: AuthHeader,
+      'Content-Type': 'application/json',
+      ...headers,
+    };
+    if (bodyData) {
+      fetchRequest.bodyData = bodyData;
+    }
+    fetchRequest.url = URL.fromString(url);
+    const r = await fetchRequest.fetch();
+
+    if (r.statusCode !== 200) {
+      throw buildErrorObject(r);
+    }
+    return JSON.parse(r.bodyString).data;
+  }
+
+  // @ts-ignore
   dependencyLibrary.startTogglTimer = async function startTogglTimer(
     timeEntry,
   ) {
@@ -74,94 +101,72 @@
 
     return JSON.parse(r.bodyString).data;
   };
+  // @ts-ignore
+  dependencyLibrary.startTogglTimer = async function startTogglTimer(
+    timeEntry,
+  ) {
+    const bodyData = Data.fromString(
+      JSON.stringify({
+        time_entry: timeEntry,
+      }),
+    );
 
+    return await makeTogglRequest(
+      `https://www.toggl.com/api/v8/time_entries/start`,
+      { method: 'POST', bodyData },
+    );
+  };
+  // @ts-ignore
   dependencyLibrary.getCurrentTogglTimer = async function getCurrentTogglTimer() {
-    const fetchRequest = new URL.FetchRequest();
-
-    fetchRequest.method = 'GET';
-    fetchRequest.headers = {
-      Authorization: AuthHeader,
-      'Content-Type': 'application/json',
-    };
-    fetchRequest.url = URL.fromString(
+    return await makeTogglRequest(
       'https://www.toggl.com/api/v8/time_entries/current',
     );
-    const r = await fetchRequest.fetch();
-
-    if (r.statusCode !== 200) {
-      throw buildErrorObject(r);
-    }
-
-    return JSON.parse(r.bodyString).data;
   };
-
+  // @ts-ignore
   dependencyLibrary.stopTogglTimer = async function stopTogglTimer(id) {
-    const fetchRequest = new URL.FetchRequest();
-
-    fetchRequest.method = 'PUT';
-    fetchRequest.headers = {
-      Authorization: AuthHeader,
-      'Content-Type': 'application/json',
-    };
-    fetchRequest.url = URL.fromString(
+    return await makeTogglRequest(
       `https://www.toggl.com/api/v8/time_entries/${id}/stop`,
+      { method: 'PUT' },
     );
-    const r = await fetchRequest.fetch();
-
-    if (r.statusCode !== 200) {
-      throw buildErrorObject(r);
-    }
-
-    return JSON.parse(r.bodyString).data;
   };
-
+  // @ts-ignore
   dependencyLibrary.createTogglProject = async function createTogglProject(
     name,
+    cid = null,
   ) {
-    const fetchRequest = new URL.FetchRequest();
-    fetchRequest.bodyData = Data.fromString(
-      JSON.stringify({ project: { name } }),
+    const bodyData = Data.fromString(
+      JSON.stringify({ project: { name, cid } }),
     );
-    fetchRequest.method = 'POST';
-    fetchRequest.headers = {
-      Authorization: AuthHeader,
-      'Content-Type': 'application/json',
-    };
-    fetchRequest.url = URL.fromString(
-      'https://api.track.toggl.com/api/v8/projects',
+
+    return await makeTogglRequest(
+      `https://api.track.toggl.com/api/v8/projects`,
+      { method: 'POST', bodyData },
     );
-    const r = await fetchRequest.fetch();
-
-    if (r.statusCode !== 200) {
-      throw buildErrorObject(r);
-    }
-
-    return JSON.parse(r.bodyString).data;
   };
+  // @ts-ignore
+  dependencyLibrary.createTogglClient = async function createTogglClient(
+    name,
+    wid,
+  ) {
+    const bodyData = Data.fromString(JSON.stringify({ client: { name, wid } }));
 
-  dependencyLibrary.getTogglProjects = async function getTogglProjects() {
-    const fetchRequest = new URL.FetchRequest();
-    fetchRequest.method = 'GET';
-    fetchRequest.headers = {
-      Authorization: AuthHeader,
-      'Content-Type': 'application/json',
-    };
-    fetchRequest.url = URL.fromString(
+    return await makeTogglRequest(
+      `https://api.track.toggl.com/api/v8/clients`,
+      { method: 'POST', bodyData },
+    );
+  };
+  // @ts-ignore
+  dependencyLibrary.getTogglDetails = async function getTogglProjects() {
+    return await makeTogglRequest(
       `https://api.track.toggl.com/api/v8/me?with_related_data=true`,
     );
-    const r = await fetchRequest.fetch();
-
-    if (r.statusCode !== 200) {
-      throw buildErrorObject(r);
-    }
-
-    return JSON.parse(r.bodyString).data.projects;
   };
 
+  // @ts-ignore
   dependencyLibrary.log = async function log(message, title = 'Log') {
     const a = new Alert(title, message);
     a.addOption('OK');
-    await a.show();
+    await a.show(null);
   };
 
   const config = {
@@ -170,11 +175,12 @@
     TRACKING_NAME_PREFIX,
   };
 
+  // @ts-ignore
   dependencyLibrary.resetTasks = () => {
     let trackingTag = flattenedTags.find((t) => t.name === TRACKING_TAG_NAME);
 
     if (!trackingTag) {
-      trackingTag = new Tag(TRACKING_TAG_NAME);
+      trackingTag = new Tag(TRACKING_TAG_NAME, null);
     }
 
     trackingTag.tasks.forEach((task) => {
@@ -184,7 +190,7 @@
       task.removeTag(trackingTag);
     });
   };
-
+  // @ts-ignore
   dependencyLibrary.config = config;
 
   return dependencyLibrary;

@@ -1,2 +1,5 @@
 node_modules
 .vscode
+
+// built files
+build/OmniToggl.omnifocusjs/Resources/common.js

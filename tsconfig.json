@@ -1,0 +1,6 @@
+{
+    "compilerOptions": {
+        "lib": ["es7"],
+        "outDir": "./build/OmniToggl.omnifocusjs/Resources"
+    }
+}
