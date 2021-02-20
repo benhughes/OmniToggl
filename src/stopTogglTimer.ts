@@ -1,6 +1,8 @@
 (() => {
   // Main action
-  const action = new PlugIn.Action(async function stopTogglTimerAction() {
+  const action = new PlugIn.Action(async function stopTogglTimerAction(this: {
+    common: commonLibrary;
+  }) {
     const {
       getCurrentTogglTimer,
       stopTogglTimer,

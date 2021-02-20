@@ -1,7 +1,5 @@
 /* eslint-disable no-bitwise, no-plusplus */
 
-declare var flattenedTags:TagArray;
-
 (() => {
   // Replace the string below with your API Token found here: https://track.toggl.com/profile
   const TOGGL_AUTH_TOKEN = 'REPLACE_ME';
@@ -42,7 +40,7 @@ declare var flattenedTags:TagArray;
     return rest ? result.slice(0, rest - 3) + '==='.substring(rest) : result;
   }
 
-  const buildErrorObject = (r) => ({
+  const buildErrorObject = (r: URL.FetchResponse) => ({
     statusCode: r.statusCode,
     data: r.bodyString,
   });
@@ -51,8 +49,13 @@ declare var flattenedTags:TagArray;
 
   async function makeTogglRequest(
     url: string,
-    { headers = {}, method = 'GET', bodyData = null } = {},
+    options: {
+      headers?: Record<string, string>;
+      method?: string;
+      bodyData?: Data;
+    } = {},
   ) {
+    const { headers = {}, method = 'GET', bodyData = null } = options;
     const fetchRequest = new URL.FetchRequest();
 
     fetchRequest.method = method;
@@ -70,12 +73,24 @@ declare var flattenedTags:TagArray;
     if (r.statusCode !== 200) {
       throw buildErrorObject(r);
     }
-    return JSON.parse(r.bodyString).data;
+
+    return r.bodyString ? JSON.parse(r.bodyString).data : {};
   }
 
-  const dependencyLibrary = new PlugIn.Library(new Version('1.0'));
+  class DL extends PlugIn.Library {
 
+  }
   // @ts-ignore
+  const dependencyLibrary: commonLibrary = new PlugIn.Library(
+    new Version('1.0'),
+  );
+
+  dependencyLibrary.config = {
+    TOGGL_AUTH_TOKEN,
+    TRACKING_TAG_NAME,
+    TRACKING_NAME_PREFIX,
+  };
+
   dependencyLibrary.startTogglTimer = async function startTogglTimer(
     timeEntry,
   ) {
@@ -90,20 +105,18 @@ declare var flattenedTags:TagArray;
       { method: 'POST', bodyData },
     );
   };
-  // @ts-ignore
   dependencyLibrary.getCurrentTogglTimer = async function getCurrentTogglTimer() {
     return await makeTogglRequest(
       'https://www.toggl.com/api/v8/time_entries/current',
     );
   };
-  // @ts-ignore
   dependencyLibrary.stopTogglTimer = async function stopTogglTimer(id) {
     return await makeTogglRequest(
       `https://www.toggl.com/api/v8/time_entries/${id}/stop`,
       { method: 'PUT' },
     );
   };
-  // @ts-ignore
+
   dependencyLibrary.createTogglProject = async function createTogglProject(
     name,
     cid = null,
@@ -117,7 +130,7 @@ declare var flattenedTags:TagArray;
       { method: 'POST', bodyData },
     );
   };
-  // @ts-ignore
+
   dependencyLibrary.createTogglClient = async function createTogglClient(
     name,
     wid,
@@ -129,29 +142,23 @@ declare var flattenedTags:TagArray;
       { method: 'POST', bodyData },
     );
   };
-  // @ts-ignore
+
   dependencyLibrary.getTogglDetails = async function getTogglProjects() {
     return await makeTogglRequest(
       `https://api.track.toggl.com/api/v8/me?with_related_data=true`,
     );
   };
 
-  // @ts-ignore
   dependencyLibrary.log = async function log(message, title = 'Log') {
     const a = new Alert(title, message);
     a.addOption('OK');
-    await a.show(null);
+    return await a.show(null);
   };
 
-  const config = {
-    TOGGL_AUTH_TOKEN,
-    TRACKING_TAG_NAME,
-    TRACKING_NAME_PREFIX,
-  };
-
-  // @ts-ignore
   dependencyLibrary.resetTasks = () => {
-    let trackingTag = flattenedTags.find((t) => t.name === TRACKING_TAG_NAME);
+    let trackingTag: Tag = flattenedTags.find(
+      (t) => t.name === TRACKING_TAG_NAME,
+    );
 
     if (!trackingTag) {
       trackingTag = new Tag(TRACKING_TAG_NAME, null);
@@ -164,8 +171,6 @@ declare var flattenedTags:TagArray;
       task.removeTag(trackingTag);
     });
   };
-  // @ts-ignore
-  dependencyLibrary.config = config;
 
   return dependencyLibrary;
 })();

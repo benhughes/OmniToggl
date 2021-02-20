@@ -1,8 +1,8 @@
-
 (() => {
   // Main action
   const action = new PlugIn.Action(async function startTogglTimerAction(
-    selection,
+    this: {common: commonLibrary},
+    selection: Selection,
   ) {
     const {
       config: { TRACKING_TAG_NAME, TRACKING_NAME_PREFIX },
@@ -13,16 +13,17 @@
       log,
     } = this.common;
 
+
     const trackingTag = flattenedTags.find((t) => t.name === TRACKING_TAG_NAME);
 
     try {
       resetTasks();
 
-      let projects = [];
+      let projects: togglProject[] = [];
 
       try {
         const togglDetails = await getTogglDetails();
-        projects = togglDetails.projects;
+        projects = togglDetails.projects || [];
       } catch (e) {
         await log(
           'An error occurred getting projects',
@@ -31,15 +32,15 @@
         console.log(e);
       }
 
-      const task = selection.tasks[0];
-      const projectName = task.containingProject && task.containingProject.name;
+      const task:Task = selection.tasks[0];
+      const projectName = task.containingProject ? task.containingProject.name : '';
 
-      const toggleProject = (projects || []).find(
+      const toggleProject = projects.find(
         (p) => p.name.trim().toLowerCase() === projectName.trim().toLowerCase(),
       );
 
       const taskName = task.name;
-      let pid;
+      let pid = null;
       if (!projectName) {
         pid = null;
       } else if (!toggleProject) {
@@ -55,7 +56,7 @@
       } else {
         pid = toggleProject.id;
       }
-      console.log('pid is: ', pid);
+      console.log('pid is: ', String(pid));
 
       const taskTags = task.tags.map((t) => t.name);
 
@@ -80,7 +81,7 @@
     }
   });
 
-  action.validate = function startTogglTimerValidate(selection) {
+  action.validate = function startTogglTimerValidate(selection: Selection) {
     // selection options: tasks, projects, folders, tags
     return selection.tasks.length === 1;
   };
