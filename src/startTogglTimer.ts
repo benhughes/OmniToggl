@@ -1,3 +1,4 @@
+
 (() => {
   // Main action
   const action = new PlugIn.Action(async function startTogglTimerAction(
@@ -7,7 +8,7 @@
       config: { TRACKING_TAG_NAME, TRACKING_NAME_PREFIX },
       startTogglTimer,
       createTogglProject,
-      getTogglProjects,
+      getTogglDetails,
       resetTasks,
       log,
     } = this.common;
@@ -20,7 +21,8 @@
       let projects = [];
 
       try {
-        projects = await getTogglProjects();
+        const togglDetails = await getTogglDetails();
+        projects = togglDetails.projects;
       } catch (e) {
         await log(
           'An error occurred getting projects',

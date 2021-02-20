@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "target":"ES2020",
         "lib": ["es7"],
         "outDir": "./build/OmniToggl.omnifocusjs/Resources"
     }

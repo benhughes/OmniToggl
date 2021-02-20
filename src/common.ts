@@ -49,10 +49,8 @@ declare var flattenedTags:TagArray;
 
   const AuthHeader = `Basic ${btoa(`${TOGGL_AUTH_TOKEN}:api_token`)}`;
 
-  const dependencyLibrary = new PlugIn.Library(new Version('1.0'));
-
   async function makeTogglRequest(
-    url,
+    url: string,
     { headers = {}, method = 'GET', bodyData = null } = {},
   ) {
     const fetchRequest = new URL.FetchRequest();
@@ -75,32 +73,8 @@ declare var flattenedTags:TagArray;
     return JSON.parse(r.bodyString).data;
   }
 
-  // @ts-ignore
-  dependencyLibrary.startTogglTimer = async function startTogglTimer(
-    timeEntry,
-  ) {
-    const fetchRequest = new URL.FetchRequest();
-    fetchRequest.bodyData = Data.fromString(
-      JSON.stringify({
-        time_entry: timeEntry,
-      }),
-    );
-    fetchRequest.method = 'POST';
-    fetchRequest.headers = {
-      Authorization: AuthHeader,
-      'Content-Type': 'application/json',
-    };
-    fetchRequest.url = URL.fromString(
-      'https://www.toggl.com/api/v8/time_entries/start',
-    );
-    const r = await fetchRequest.fetch();
+  const dependencyLibrary = new PlugIn.Library(new Version('1.0'));
 
-    if (r.statusCode !== 200) {
-      throw buildErrorObject(r);
-    }
-
-    return JSON.parse(r.bodyString).data;
-  };
   // @ts-ignore
   dependencyLibrary.startTogglTimer = async function startTogglTimer(
     timeEntry,

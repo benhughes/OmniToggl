@@ -3,3 +3,6 @@ node_modules
 
 // built files
 build/OmniToggl.omnifocusjs/Resources/common.js
+
+build/OmniToggl.omnifocusjs/Resources/startTogglTimer.js
+build/OmniToggl.omnifocusjs/Resources/stopTogglTimer.js

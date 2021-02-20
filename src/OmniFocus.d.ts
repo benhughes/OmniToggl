@@ -188,10 +188,10 @@ declare class ColorSpace {
 // Console
 
 declare class Console {
-  log(message: Object, additional: Array<Object | null>);
-  error(message: Object, additional: Array<Object | null>);
-  info(message: Object, additional: Array<Object | null>);
-  warn(message: Object, additional: Array<Object | null>);
+  log(message: Object, additional?: Array<Object | null> | Object);
+  error(message: Object, additional?: Array<Object | null> | Object);
+  info(message: Object, additional?: Array<Object | null> | Object);
+  warn(message: Object, additional?: Array<Object | null> | Object);
   clear();
 }
 
