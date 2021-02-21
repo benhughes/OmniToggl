@@ -83,12 +83,20 @@ interface togglMe {
   clients: togglClient[] | null;
 }
 
-declare class commonLibrary extends Library {
+interface requestOptions{
+  headers?: Record<string, string>;
+  method?: string;
+  bodyData?: Data;
+}
+interface commonLibrary {
   config: {
     TOGGL_AUTH_TOKEN: string;
     TRACKING_TAG_NAME: string;
     TRACKING_NAME_PREFIX: string;
   };
+
+
+  makeTogglRequest: (url: string, options: requestOptions) => Promise<any>
   startTogglTimer: (timeEntry: createTimeEntry) => Promise<timeEntry>;
   getCurrentTogglTimer: () => Promise<timeEntry>;
   stopTogglTimer: (id: timeEntry['id']) => Promise<timeEntry>;

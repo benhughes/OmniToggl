@@ -47,130 +47,124 @@
 
   const AuthHeader = `Basic ${btoa(`${TOGGL_AUTH_TOKEN}:api_token`)}`;
 
-  async function makeTogglRequest(
-    url: string,
-    options: {
-      headers?: Record<string, string>;
-      method?: string;
-      bodyData?: Data;
-    } = {},
-  ) {
-    const { headers = {}, method = 'GET', bodyData = null } = options;
-    const fetchRequest = new URL.FetchRequest();
-
-    fetchRequest.method = method;
-    fetchRequest.headers = {
-      Authorization: AuthHeader,
-      'Content-Type': 'application/json',
-      ...headers,
+  class DL extends PlugIn.Library implements commonLibrary {
+    constructor(v: Version) {
+      super(v);
+    }
+    config = {
+      TOGGL_AUTH_TOKEN,
+      TRACKING_TAG_NAME,
+      TRACKING_NAME_PREFIX,
     };
-    if (bodyData) {
-      fetchRequest.bodyData = bodyData;
-    }
-    fetchRequest.url = URL.fromString(url);
-    const r = await fetchRequest.fetch();
 
-    if (r.statusCode !== 200) {
-      throw buildErrorObject(r);
-    }
 
-    return r.bodyString ? JSON.parse(r.bodyString).data : {};
-  }
+    async makeTogglRequest(
+      url: string,
+      options: requestOptions = {},
+    ): Promise<any> {
+      const { headers = {}, method = 'GET', bodyData = null } = options;
+      const fetchRequest = new URL.FetchRequest();
 
-  class DL extends PlugIn.Library {
-
-  }
-  // @ts-ignore
-  const dependencyLibrary: commonLibrary = new PlugIn.Library(
-    new Version('1.0'),
-  );
-
-  dependencyLibrary.config = {
-    TOGGL_AUTH_TOKEN,
-    TRACKING_TAG_NAME,
-    TRACKING_NAME_PREFIX,
-  };
-
-  dependencyLibrary.startTogglTimer = async function startTogglTimer(
-    timeEntry,
-  ) {
-    const bodyData = Data.fromString(
-      JSON.stringify({
-        time_entry: timeEntry,
-      }),
-    );
-
-    return await makeTogglRequest(
-      `https://www.toggl.com/api/v8/time_entries/start`,
-      { method: 'POST', bodyData },
-    );
-  };
-  dependencyLibrary.getCurrentTogglTimer = async function getCurrentTogglTimer() {
-    return await makeTogglRequest(
-      'https://www.toggl.com/api/v8/time_entries/current',
-    );
-  };
-  dependencyLibrary.stopTogglTimer = async function stopTogglTimer(id) {
-    return await makeTogglRequest(
-      `https://www.toggl.com/api/v8/time_entries/${id}/stop`,
-      { method: 'PUT' },
-    );
-  };
-
-  dependencyLibrary.createTogglProject = async function createTogglProject(
-    name,
-    cid = null,
-  ) {
-    const bodyData = Data.fromString(
-      JSON.stringify({ project: { name, cid } }),
-    );
-
-    return await makeTogglRequest(
-      `https://api.track.toggl.com/api/v8/projects`,
-      { method: 'POST', bodyData },
-    );
-  };
-
-  dependencyLibrary.createTogglClient = async function createTogglClient(
-    name,
-    wid,
-  ) {
-    const bodyData = Data.fromString(JSON.stringify({ client: { name, wid } }));
-
-    return await makeTogglRequest(
-      `https://api.track.toggl.com/api/v8/clients`,
-      { method: 'POST', bodyData },
-    );
-  };
-
-  dependencyLibrary.getTogglDetails = async function getTogglProjects() {
-    return await makeTogglRequest(
-      `https://api.track.toggl.com/api/v8/me?with_related_data=true`,
-    );
-  };
-
-  dependencyLibrary.log = async function log(message, title = 'Log') {
-    const a = new Alert(title, message);
-    a.addOption('OK');
-    return await a.show(null);
-  };
-
-  dependencyLibrary.resetTasks = () => {
-    let trackingTag: Tag = flattenedTags.find(
-      (t) => t.name === TRACKING_TAG_NAME,
-    );
-
-    if (!trackingTag) {
-      trackingTag = new Tag(TRACKING_TAG_NAME, null);
-    }
-
-    trackingTag.tasks.forEach((task) => {
-      if (task.name.startsWith(TRACKING_NAME_PREFIX)) {
-        task.name = task.name.replace(TRACKING_NAME_PREFIX, '');
+      fetchRequest.method = method;
+      fetchRequest.headers = {
+        Authorization: AuthHeader,
+        'Content-Type': 'application/json',
+        ...headers,
+      };
+      if (bodyData) {
+        fetchRequest.bodyData = bodyData;
       }
-      task.removeTag(trackingTag);
-    });
-  };
+      fetchRequest.url = URL.fromString(url);
+      const r = await fetchRequest.fetch();
+
+      if (r.statusCode !== 200) {
+        throw buildErrorObject(r);
+      }
+
+      return r.bodyString ? JSON.parse(r.bodyString).data : {};
+    }
+
+
+    async startTogglTimer(
+      timeEntry: createTimeEntry,
+    ) {
+      const bodyData = Data.fromString(
+        JSON.stringify({
+          time_entry: timeEntry,
+        }),
+      );
+
+      return await this.makeTogglRequest(
+        `https://www.toggl.com/api/v8/time_entries/start`,
+        { method: 'POST', bodyData },
+      );
+    };
+    async stopTogglTimer(id: timeEntry['id']) {
+      return await this.makeTogglRequest(
+        `https://www.toggl.com/api/v8/time_entries/${id}/stop`,
+        { method: 'PUT' },
+      );
+    };
+
+    async getCurrentTogglTimer() {
+      return await this.makeTogglRequest(
+        'https://www.toggl.com/api/v8/time_entries/current',
+      );
+    };
+
+    async createTogglProject(name: string, cid: number| null = null) {
+      const bodyData = Data.fromString(
+        JSON.stringify({ project: { name, cid } }),
+      );
+
+      return await this.makeTogglRequest(
+        `https://api.track.toggl.com/api/v8/projects`,
+        { method: 'POST', bodyData },
+      );
+    };
+
+    async createTogglClient(
+      name: string,
+      wid: number,
+    ) {
+      const bodyData = Data.fromString(JSON.stringify({ client: { name, wid } }));
+
+      return await this.makeTogglRequest(
+        `https://api.track.toggl.com/api/v8/clients`,
+        { method: 'POST', bodyData },
+      );
+    };
+
+    async getTogglDetails() {
+      return await this.makeTogglRequest(
+        `https://api.track.toggl.com/api/v8/me?with_related_data=true`,
+      );
+    };
+
+    log = async function log(message: string, title = 'Log') {
+      const a = new Alert(title, message);
+      a.addOption('OK');
+      return await a.show(null);
+    };
+    resetTasks = () => {
+      let trackingTag: Tag = flattenedTags.find(
+        (t) => t.name === TRACKING_TAG_NAME,
+      );
+
+      if (!trackingTag) {
+        trackingTag = new Tag(TRACKING_TAG_NAME, null);
+      }
+
+      trackingTag.tasks.forEach((task) => {
+        if (task.name.startsWith(TRACKING_NAME_PREFIX)) {
+          task.name = task.name.replace(TRACKING_NAME_PREFIX, '');
+        }
+        task.removeTag(trackingTag);
+      });
+    };
+  }
+
+  const dependencyLibrary = new DL(new Version('1.0'));
 
   return dependencyLibrary;
 })();
