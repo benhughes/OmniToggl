@@ -83,26 +83,41 @@ interface togglMe {
   clients: togglClient[] | null;
 }
 
-interface requestOptions{
+interface requestOptions {
   headers?: Record<string, string>;
   method?: string;
   bodyData?: Data;
 }
-interface commonLibrary {
+type ICommon = {
   config: {
     TOGGL_AUTH_TOKEN: string;
     TRACKING_TAG_NAME: string;
     TRACKING_NAME_PREFIX: string;
   };
 
+  log: (message: string, title?: string) => Promise<number>;
+  resetTasks: () => void;
+}
 
-  makeTogglRequest: (url: string, options: requestOptions) => Promise<any>
+interface ITogglClient {
+  authToken: string;
+  makeTogglRequest: (url: string, options: requestOptions) => Promise<any>;
   startTogglTimer: (timeEntry: createTimeEntry) => Promise<timeEntry>;
   getCurrentTogglTimer: () => Promise<timeEntry>;
   stopTogglTimer: (id: timeEntry['id']) => Promise<timeEntry>;
-  createTogglProject: (name: string, cid?: number | null) => Promise<togglProject>;
+  createTogglProject: (
+    name: string,
+    cid?: number | null,
+  ) => Promise<togglProject>;
   createTogglClient: (name: string, wid: number) => Promise<togglClient>;
   getTogglDetails: () => Promise<togglMe>;
-  log: (message: string, title?: string) => Promise<number>;
-  resetTasks: () => void;
+}
+
+interface ITogglClientConstructor {
+  new (authToken: string): ITogglClient;
+}
+
+interface ISharedThis {
+  common: { commonHolder: ICommon };
+  TogglClient: { TogglClientClass: ITogglClientConstructor };
 }

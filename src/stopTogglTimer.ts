@@ -1,19 +1,20 @@
 (() => {
   // Main action
-  const action = new PlugIn.Action(async function stopTogglTimerAction(this: {
-    common: commonLibrary;
-  }) {
+  const action = new PlugIn.Action(async function stopTogglTimerAction(
+    this: ISharedThis,
+  ) {
     const {
-      getCurrentTogglTimer,
-      stopTogglTimer,
+      config: { TOGGL_AUTH_TOKEN },
       resetTasks,
       log,
-    } = this.common;
+    } = this.common.commonHolder;
+
+    const togglClient = new this.TogglClient.TogglClientClass(TOGGL_AUTH_TOKEN)
 
     try {
-      const currentTimer = await getCurrentTogglTimer();
+      const currentTimer = await togglClient.getCurrentTogglTimer();
       if (currentTimer) {
-        await stopTogglTimer(currentTimer.id);
+        await togglClient.stopTogglTimer(currentTimer.id);
       }
       resetTasks();
     } catch (e) {

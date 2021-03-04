@@ -1,18 +1,16 @@
 (() => {
   // Main action
   const action = new PlugIn.Action(async function startTogglTimerAction(
-    this: {common: commonLibrary},
+    this: ISharedThis,
     selection: Selection,
   ) {
     const {
-      config: { TRACKING_TAG_NAME, TRACKING_NAME_PREFIX },
-      startTogglTimer,
-      createTogglProject,
-      getTogglDetails,
+      config: { TOGGL_AUTH_TOKEN, TRACKING_TAG_NAME, TRACKING_NAME_PREFIX },
       resetTasks,
       log,
-    } = this.common;
+    } = this.common.commonHolder;
 
+    const togglClient = new this.TogglClient.TogglClientClass(TOGGL_AUTH_TOKEN)
 
     const trackingTag = flattenedTags.find((t) => t.name === TRACKING_TAG_NAME);
 
@@ -22,7 +20,7 @@
       let projects: togglProject[] = [];
 
       try {
-        const togglDetails = await getTogglDetails();
+        const togglDetails = await togglClient.getTogglDetails();
         projects = togglDetails.projects || [];
       } catch (e) {
         await log(
@@ -46,7 +44,7 @@
       } else if (!toggleProject) {
         console.log(`project not found creating new ${projectName} project`);
         try {
-          const r = await createTogglProject(projectName);
+          const r = await togglClient.createTogglProject(projectName);
           console.log(`project created id: ${r.id}`);
           pid = r.id;
         } catch (e) {
@@ -61,9 +59,9 @@
       const taskTags = task.tags.map((t) => t.name);
 
       try {
-        const r = await startTogglTimer({
+        const r = await togglClient.startTogglTimer({
           description: taskName,
-          created_with: 'omnifocus',
+          created_with: 'omnitoggl',
           tags: taskTags,
           pid,
         });

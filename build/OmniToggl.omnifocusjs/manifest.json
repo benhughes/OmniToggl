@@ -15,6 +15,9 @@
   "libraries": [
     {
       "identifier": "common"
+    },
+    {
+      "identifier": "TogglClient"
     }
   ]
 }
