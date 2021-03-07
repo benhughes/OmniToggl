@@ -9,16 +9,19 @@
     selection: Selection,
   ) {
     const { resetTasks, log } = this.common.commonHolder;
+    const { preferenceManager } = this.PreferenceManager;
 
     // TODO: can I use generics to make this better?
-    const TOGGL_AUTH_TOKEN = String(
-      this.PreferenceManager.preferenceManager.getPreference('token'),
-    );
+    const TOGGL_AUTH_TOKEN = String(preferenceManager.getPreference('token'));
     const TRACKING_TAG_NAME = String(
-      this.PreferenceManager.preferenceManager.getPreference('trackingTag'),
+      preferenceManager.getPreference('trackingTag'),
     );
     const TRACKING_NAME_PREFIX = String(
-      this.PreferenceManager.preferenceManager.getPreference('namePrefix'),
+      preferenceManager.getPreference('namePrefix'),
+    );
+
+    const SHOULD_TRACK_CLIENTS = Boolean(
+      preferenceManager.getPreference('useTopFolderForClient'),
     );
 
     const togglClient = new this.TogglClient.TogglClientClass(TOGGL_AUTH_TOKEN);
@@ -60,9 +63,10 @@
         project.parentFolder &&
         getTopFolderName(project.parentFolder);
 
-      const cid = folderName
-        ? await getClientId(folderName, clients, wid)
-        : null;
+      const cid =
+        folderName && SHOULD_TRACK_CLIENTS
+          ? await getClientId(folderName, clients, wid)
+          : null;
       console.log('cid is: ', String(cid));
 
       const pid = await getProjectId(projectName, projects, cid);

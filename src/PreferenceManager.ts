@@ -85,6 +85,12 @@ class PreferenceManager implements IPreferenceManager{
         type: 'string',
         default: '🎯 ',
       },
+      useTopFolderForClient: {
+        id: 'useTopFolderForClient',
+        displayName: 'Use the top level folder to determine clients',
+        type: 'boolean',
+        default: false,
+      },
     },
   };
   const preferenceManager = new PreferenceManager('omnitoggl', config);
