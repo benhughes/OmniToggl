@@ -4,10 +4,20 @@
     this: ISharedThis,
   ) {
     const {
-      config: { TOGGL_AUTH_TOKEN },
       resetTasks,
       log,
     } = this.common.commonHolder;
+
+    // TODO: can I use generics to make this better?
+    const TOGGL_AUTH_TOKEN = String(
+      this.PreferenceManager.preferenceManager.getPreference('token'),
+    );
+    const TRACKING_TAG_NAME = String(
+      this.PreferenceManager.preferenceManager.getPreference('trackingTag'),
+    );
+    const TRACKING_NAME_PREFIX = String(
+      this.PreferenceManager.preferenceManager.getPreference('namePrefix'),
+    );
 
     const togglClient = new this.TogglClient.TogglClientClass(TOGGL_AUTH_TOKEN)
 
@@ -16,7 +26,7 @@
       if (currentTimer) {
         await togglClient.stopTogglTimer(currentTimer.id);
       }
-      resetTasks();
+      resetTasks(TRACKING_TAG_NAME, TRACKING_NAME_PREFIX);
     } catch (e) {
       log('Please try again later', 'Error stopping current task');
       console.log(JSON.stringify(e, null, 2));

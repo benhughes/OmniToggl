@@ -4,18 +4,25 @@
     this: ISharedThis,
     selection: Selection,
   ) {
-    const {
-      config: { TOGGL_AUTH_TOKEN, TRACKING_TAG_NAME, TRACKING_NAME_PREFIX },
-      resetTasks,
-      log,
-    } = this.common.commonHolder;
+    const { resetTasks, log } = this.common.commonHolder;
 
-    const togglClient = new this.TogglClient.TogglClientClass(TOGGL_AUTH_TOKEN)
+    // TODO: can I use generics to make this better?
+    const TOGGL_AUTH_TOKEN = String(
+      this.PreferenceManager.preferenceManager.getPreference('token'),
+    );
+    const TRACKING_TAG_NAME = String(
+      this.PreferenceManager.preferenceManager.getPreference('trackingTag'),
+    );
+    const TRACKING_NAME_PREFIX = String(
+      this.PreferenceManager.preferenceManager.getPreference('namePrefix'),
+    );
+
+    const togglClient = new this.TogglClient.TogglClientClass(TOGGL_AUTH_TOKEN);
 
     const trackingTag = flattenedTags.find((t) => t.name === TRACKING_TAG_NAME);
 
     try {
-      resetTasks();
+      resetTasks(TRACKING_TAG_NAME, TRACKING_NAME_PREFIX);
 
       let projects: togglProject[] = [];
 
@@ -30,8 +37,10 @@
         console.log(e);
       }
 
-      const task:Task = selection.tasks[0];
-      const projectName = task.containingProject ? task.containingProject.name : '';
+      const task: Task = selection.tasks[0];
+      const projectName = task.containingProject
+        ? task.containingProject.name
+        : '';
 
       const toggleProject = projects.find(
         (p) => p.name.trim().toLowerCase() === projectName.trim().toLowerCase(),

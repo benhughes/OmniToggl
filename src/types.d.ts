@@ -89,15 +89,9 @@ interface requestOptions {
   bodyData?: Data;
 }
 type ICommon = {
-  config: {
-    TOGGL_AUTH_TOKEN: string;
-    TRACKING_TAG_NAME: string;
-    TRACKING_NAME_PREFIX: string;
-  };
-
   log: (message: string, title?: string) => Promise<number>;
-  resetTasks: () => void;
-}
+  resetTasks: (trackingName: string, trackingNamePrefix: string) => void;
+};
 
 interface ITogglClient {
   authToken: string;
@@ -120,4 +114,5 @@ interface ITogglClientConstructor {
 interface ISharedThis {
   common: { commonHolder: ICommon };
   TogglClient: { TogglClientClass: ITogglClientConstructor };
+  PreferenceManager: { preferenceManager: IPreferenceManager };
 }
