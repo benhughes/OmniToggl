@@ -1,4 +1,8 @@
 (() => {
+  // recursive helper to get the top level folder to use as client name
+  const getTopFolderName = (f: Folder): string =>
+    f.parent ? getTopFolderName(f.parent) : f.name;
+
   // Main action
   const action = new PlugIn.Action(async function startTogglTimerAction(
     this: ISharedThis,
@@ -25,10 +29,14 @@
       resetTasks(TRACKING_TAG_NAME, TRACKING_NAME_PREFIX);
 
       let projects: togglProject[] = [];
+      let clients: togglClient[] = [];
+      let wid = null;
 
       try {
         const togglDetails = await togglClient.getTogglDetails();
         projects = togglDetails.projects || [];
+        clients = togglDetails.clients || [];
+        wid = togglDetails.workspaces[0].id;
       } catch (e) {
         await log(
           'An error occurred getting projects',
@@ -37,40 +45,33 @@
         console.log(e);
       }
 
-      const task: Task = selection.tasks[0];
-      const projectName = task.containingProject
-        ? task.containingProject.name
-        : '';
-
-      const toggleProject = projects.find(
-        (p) => p.name.trim().toLowerCase() === projectName.trim().toLowerCase(),
-      );
-
-      const taskName = task.name;
-      let pid = null;
-      if (!projectName) {
-        pid = null;
-      } else if (!toggleProject) {
-        console.log(`project not found creating new ${projectName} project`);
-        try {
-          const r = await togglClient.createTogglProject(projectName);
-          console.log(`project created id: ${r.id}`);
-          pid = r.id;
-        } catch (e) {
-          console.log(`Error creating project ${projectName}`);
-          console.log(JSON.stringify(e, null, 2));
-        }
-      } else {
-        pid = toggleProject.id;
+      if (!wid) {
+        throw new Error('Cannot find Workspace ID');
       }
-      console.log('pid is: ', String(pid));
 
-      const taskTags = task.tags.map((t) => t.name);
+      const task: Task = selection.tasks[0];
+      const taskName = task.name;
+      const taskTags = task.tags.map((t: Tag) => t.name);
+
+      const project = task.containingProject;
+      const projectName = (project && project.name) || '';
+      const folderName =
+        project &&
+        project.parentFolder &&
+        getTopFolderName(project.parentFolder);
+
+      const cid = folderName
+        ? await getClientId(folderName, clients, wid)
+        : null;
+      console.log('cid is: ', String(cid));
+
+      const pid = await getProjectId(projectName, projects, cid);
+      console.log('pid is: ', String(pid));
 
       try {
         const r = await togglClient.startTogglTimer({
           description: taskName,
-          created_with: 'omnitoggl',
+          created_with: 'omnifocus',
           tags: taskTags,
           pid,
         });
@@ -85,6 +86,61 @@
       await log('An error occurred', 'See console for more info');
       console.log(e);
       console.log(JSON.stringify(e, null, 2));
+    }
+
+    async function getClientId(
+      clientName: string,
+      togglClients: togglClient[],
+      wid: number,
+    ) {
+      const togglClientItem = (togglClients || []).find(
+        (c) => c.name.trim().toLowerCase() === clientName.trim().toLowerCase(),
+      );
+      let cid = null;
+      if (!clientName) {
+        cid = null;
+      } else if (!togglClientItem) {
+        console.log(`client not found creating new ${clientName} client`);
+        try {
+          const r = await togglClient.createTogglClient(clientName, wid);
+          console.log(`client created id: ${r.id}`);
+          cid = r.id;
+        } catch (e) {
+          console.log(`Error creating client ${clientName}`);
+          console.log(JSON.stringify(e, null, 2));
+        }
+      } else {
+        cid = togglClientItem.id;
+      }
+      return cid;
+    }
+
+    async function getProjectId(
+      projectName: string,
+      togglProjects: togglProject[],
+      cid: number | null,
+    ) {
+      const togglProjectItem = (togglProjects || []).find(
+        (p) => p.name.trim().toLowerCase() === projectName.trim().toLowerCase(),
+      );
+
+      let pid = null;
+      if (!projectName) {
+        pid = null;
+      } else if (!togglProjectItem) {
+        console.log(`project not found creating new ${projectName} project`);
+        try {
+          const r = await togglClient.createTogglProject(projectName, cid);
+          console.log(`project created id: ${r.id}`);
+          pid = r.id;
+        } catch (e) {
+          console.log(`Error creating project ${projectName}`);
+          console.log(JSON.stringify(e, null, 2));
+        }
+      } else {
+        pid = togglProjectItem.id;
+      }
+      return pid;
     }
   });
 
