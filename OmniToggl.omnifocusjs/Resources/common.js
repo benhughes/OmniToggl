@@ -10,6 +10,8 @@
   // Replace this if you would like something different
   const TRACKING_NAME_PREFIX = '🎯';
 
+  const TOGGL_URL = 'https://api.track.toggl.com/api/v8';
+
   // the following is a pollyfill for base64 taken from https://github.com/MaxArt2501/base64-js/blob/master/base64.js
   function btoa(stringParam) {
     const b64 =
@@ -64,7 +66,7 @@
       'Content-Type': 'application/json',
     };
     fetchRequest.url = URL.fromString(
-      'https://www.toggl.com/api/v8/time_entries/start',
+      `${TOGGL_URL}/time_entries/start`,
     );
     const r = await fetchRequest.fetch();
 
@@ -84,7 +86,7 @@
       'Content-Type': 'application/json',
     };
     fetchRequest.url = URL.fromString(
-      'https://www.toggl.com/api/v8/time_entries/current',
+      `${TOGGL_URL}/time_entries/current`,
     );
     const r = await fetchRequest.fetch();
 
@@ -104,7 +106,7 @@
       'Content-Type': 'application/json',
     };
     fetchRequest.url = URL.fromString(
-      `https://www.toggl.com/api/v8/time_entries/${id}/stop`,
+      `${TOGGL_URL}/time_entries/${id}/stop`,
     );
     const r = await fetchRequest.fetch();
 
@@ -128,7 +130,7 @@
       'Content-Type': 'application/json',
     };
     fetchRequest.url = URL.fromString(
-      'https://api.track.toggl.com/api/v8/projects',
+      `${TOGGL_URL}/projects`,
     );
     const r = await fetchRequest.fetch();
 
@@ -147,7 +149,7 @@
       'Content-Type': 'application/json',
     };
     fetchRequest.url = URL.fromString(
-      `https://api.track.toggl.com/api/v8/me?with_related_data=true`,
+      `${TOGGL_URL}/me?with_related_data=true`,
     );
     const r = await fetchRequest.fetch();
 
