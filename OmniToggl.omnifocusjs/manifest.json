@@ -2,7 +2,7 @@
   "defaultLocale": "en",
   "author": "Ben Hughes",
   "identifier": "com.github.benhughes.OmniToggl",
-  "version": "2.0.1",
+  "version": "1.1.1",
   "description": "A collection of actions for starting Toggl from OmniFocus. See: https://github.com/benhughes/OmniToggl",
   "actions": [
     {
@@ -10,20 +10,11 @@
     },
     {
       "identifier": "stopTogglTimer"
-    },
-    {
-      "identifier": "editPreferences"
     }
   ],
   "libraries": [
     {
       "identifier": "common"
-    },
-    {
-      "identifier": "TogglClient"
-    },
-    {
-      "identifier": "PreferenceManager"
     }
   ]
 }

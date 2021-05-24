@@ -1,8 +1,0 @@
-{
-  "scripts": {
-    "build": "tsc && osascript -e 'quit app \"OmniFocus\"' && open /Applications/OmniFocus.app"
-  },
-  "dependencies": {
-    "typescript": "^4.2.3"
-  }
-}
