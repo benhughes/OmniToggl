@@ -6,9 +6,11 @@
   "description": "A collection of actions for starting Toggl from OmniFocus. See: https://github.com/benhughes/OmniToggl",
   "actions": [
     {
+      "image": "play.circle",
       "identifier": "startTogglTimer"
     },
     {
+      "image": "stop.circle",
       "identifier": "stopTogglTimer"
     }
   ],
