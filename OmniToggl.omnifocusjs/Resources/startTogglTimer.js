@@ -29,14 +29,21 @@
         console.log(e);
       }
 
-      const task = selection.tasks[0];
-      const projectName = task.containingProject && task.containingProject.name;
+      const source = selection.tasks[0] || selection.projects[0];
+      let projectName = '';
+      if(source instanceof Task) {
+        if(source.containingProject) {
+          projectName = source.containingProject.name;
+        }
+      } else {
+        projectName = source.name
+      }
 
       const toggleProject = (projects || []).find(
         (p) => p.name.trim().toLowerCase() === projectName.trim().toLowerCase(),
       );
 
-      const taskName = task.name;
+      const taskName = source.name;
       let pid;
       if (!projectName) {
         pid = null;
@@ -55,7 +62,7 @@
       }
       console.log('pid is: ', pid);
 
-      const taskTags = task.tags.map((t) => t.name);
+      const taskTags = source.tags.map((t) => t.name);
 
       try {
         const r = await startTogglTimer({
@@ -64,11 +71,12 @@
           tags: taskTags,
           pid,
         });
-        task.name = TRACKING_NAME_PREFIX + task.name;
-        task.addTag(trackingTag);
+        source.name = TRACKING_NAME_PREFIX + source.name;
+        source.addTag(trackingTag);
         console.log('Timer started successfully', JSON.stringify(r));
       } catch (e) {
         await log('An error occurred', 'See console for more info');
+        console.log(e);
         console.log(JSON.stringify(e, null, 2));
       }
     } catch (e) {
@@ -80,7 +88,10 @@
 
   action.validate = function startTogglTimerValidate(selection) {
     // selection options: tasks, projects, folders, tags
-    return selection.tasks.length === 1;
+    const taskSelected = selection.tasks.length === 1;
+    const projectSelected = selection.projects.length === 1;
+
+    return taskSelected || projectSelected
   };
 
   return action;
