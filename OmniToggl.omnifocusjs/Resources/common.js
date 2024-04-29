@@ -67,7 +67,7 @@
     fetchRequest.url = URL.fromString(
       // TODO: Migrate v8 to v9
       // DONE: Migrate v8 to v9
-      `${TOGGL_URL}/workspaces/${time_entry.workspace_id}/time_entries`,
+      `${TOGGL_URL}/workspaces/${timeEntry.workspace_id}/time_entries`,
     );
     const r = await fetchRequest.fetch();
 
@@ -102,17 +102,21 @@
       return JSON.parse(r.bodyString);
     };
 
-  dependencyLibrary.stopTogglTimer = async function stopTogglTimer(id) {
+  dependencyLibrary.stopTogglTimer = async function stopTogglTimer(
+    workspaceId,
+    id,
+  ) {
     const fetchRequest = new URL.FetchRequest();
 
-    fetchRequest.method = 'PUT';
+    fetchRequest.method = 'PATCH';
     fetchRequest.headers = {
       Authorization: AuthHeader,
       'Content-Type': 'application/json',
     };
     fetchRequest.url = URL.fromString(
       // TODO: Migrate v8 to v9
-      `${TOGGL_URL}/time_entries/${id}/stop`,
+      // DONE: Migrate v8 to v9
+      `${TOGGL_URL}/workspaces/${workspaceId}/time_entries/${id}/stop`,
     );
     const r = await fetchRequest.fetch();
 

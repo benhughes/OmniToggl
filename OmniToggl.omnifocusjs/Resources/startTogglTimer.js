@@ -64,8 +64,6 @@
         pid = toggleProject.id;
         workspaceId = toggleProject.workspace_id;
       }
-      console.log('pid is: ', pid);
-      console.log('wid is:', workspaceId);
 
       const taskTags = source.tags.map((t) => t.name);
 
@@ -78,6 +76,7 @@
           project_id: pid,
           workspace_id: workspaceId,
           start: new Date().toISOString(),
+          duration: -1,
         });
         source.name = TRACKING_NAME_PREFIX + source.name;
         source.addTag(trackingTag);
