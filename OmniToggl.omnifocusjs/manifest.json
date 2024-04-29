@@ -1,9 +1,9 @@
 {
   "defaultLocale": "en",
-  "author": "Ben Hughes",
-  "identifier": "com.github.benhughes.OmniToggl",
-  "version": "1.1.2",
-  "description": "A collection of actions for starting Toggl from OmniFocus. See: https://github.com/benhughes/OmniToggl",
+  "author": ["Ben Hughes", "sho kisaragi"],
+  "identifier": "com.github.oshiire.OmniToggl",
+  "version": "1.2.0",
+  "description": "A collection of actions for starting Toggl from OmniFocus. See: https://github.com/sho7650/OmniToggl, original: https://github.com/benhughes/OmniToggl",
   "actions": [
     {
       "image": "play.circle",
