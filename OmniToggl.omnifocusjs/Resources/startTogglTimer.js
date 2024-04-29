@@ -18,9 +18,10 @@
       resetTasks();
 
       let projects = [];
+      let results = [];
 
       try {
-        projects = await getTogglProjects();
+        results = await getTogglProjects();
       } catch (e) {
         await log(
           'An error occurred getting projects',
@@ -28,15 +29,17 @@
         );
         console.log(e);
       }
+      let workspaceId = results.default_workspace_id;
+      projects = results.projects;
 
       const source = selection.tasks[0] || selection.projects[0];
       let projectName = '';
-      if(source instanceof Task) {
-        if(source.containingProject) {
+      if (source instanceof Task) {
+        if (source.containingProject) {
           projectName = source.containingProject.name;
         }
       } else {
-        projectName = source.name
+        projectName = source.name;
       }
 
       const toggleProject = (projects || []).find(
@@ -50,7 +53,7 @@
       } else if (!toggleProject) {
         console.log(`project not found creating new ${projectName} project`);
         try {
-          const r = await createTogglProject(projectName);
+          const r = await createTogglProject(workspaceId, projectName);
           console.log(`project created id: ${r.id}`);
           pid = r.id;
         } catch (e) {
@@ -59,8 +62,10 @@
         }
       } else {
         pid = toggleProject.id;
+        workspaceId = toggleProject.workspace_id;
       }
       console.log('pid is: ', pid);
+      console.log('wid is:', workspaceId);
 
       const taskTags = source.tags.map((t) => t.name);
 
@@ -69,7 +74,8 @@
           description: taskName,
           created_with: 'omnifocus',
           tags: taskTags,
-          pid,
+          project_id: pid,
+          workspace_id: workspaceId,
         });
         source.name = TRACKING_NAME_PREFIX + source.name;
         source.addTag(trackingTag);
@@ -91,7 +97,7 @@
     const taskSelected = selection.tasks.length === 1;
     const projectSelected = selection.projects.length === 1;
 
-    return taskSelected || projectSelected
+    return taskSelected || projectSelected;
   };
 
   return action;

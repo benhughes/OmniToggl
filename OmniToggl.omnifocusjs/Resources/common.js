@@ -11,7 +11,8 @@
   const TRACKING_NAME_PREFIX = '🎯';
 
   // TODO: Migrate v8 to v9
-  const TOGGL_URL = 'https://api.track.toggl.com/api/v8';
+  // DONE: Migrate v8 to v9
+  const TOGGL_URL = 'https://api.track.toggl.com/api/v9';
 
   // the following is a pollyfill for base64 taken from https://github.com/MaxArt2501/base64-js/blob/master/base64.js
   function btoa(stringParam) {
@@ -58,7 +59,8 @@
     const fetchRequest = new URL.FetchRequest();
     fetchRequest.bodyData = Data.fromString(
       JSON.stringify({
-        time_entry: timeEntry,
+        //        time_entry: timeEntry,
+        timeEntry,
       }),
     );
     fetchRequest.method = 'POST';
@@ -68,7 +70,8 @@
     };
     fetchRequest.url = URL.fromString(
       // TODO: Migrate v8 to v9
-      `${TOGGL_URL}/time_entries/start`,
+      // DONE: Migrate v8 to v9
+      `${TOGGL_URL}/workspaces/${time_entry.workspace_id}/time_entries`,
     );
     const r = await fetchRequest.fetch();
 
@@ -76,29 +79,32 @@
       throw buildErrorObject(r);
     }
 
-    return JSON.parse(r.bodyString).data;
+    // modified to cut '.data' from the return value
+    return JSON.parse(r.bodyString);
   };
 
-  dependencyLibrary.getCurrentTogglTimer = async function getCurrentTogglTimer() {
-    const fetchRequest = new URL.FetchRequest();
+  dependencyLibrary.getCurrentTogglTimer =
+    async function getCurrentTogglTimer() {
+      const fetchRequest = new URL.FetchRequest();
 
-    fetchRequest.method = 'GET';
-    fetchRequest.headers = {
-      Authorization: AuthHeader,
-      'Content-Type': 'application/json',
+      fetchRequest.method = 'GET';
+      fetchRequest.headers = {
+        Authorization: AuthHeader,
+        'Content-Type': 'application/json',
+      };
+      fetchRequest.url = URL.fromString(
+        // TODO: Migrate v8 to v9
+        // DONE: Migrate v8 to v9
+        `${TOGGL_URL}/me/time_entries/current`,
+      );
+      const r = await fetchRequest.fetch();
+
+      if (r.statusCode !== 200) {
+        throw buildErrorObject(r);
+      }
+      // modified to cut '.data' from the return value
+      return JSON.parse(r.bodyString);
     };
-    fetchRequest.url = URL.fromString(
-      // TODO: Migrate v8 to v9
-      `${TOGGL_URL}/time_entries/current`,
-    );
-    const r = await fetchRequest.fetch();
-
-    if (r.statusCode !== 200) {
-      throw buildErrorObject(r);
-    }
-
-    return JSON.parse(r.bodyString).data;
-  };
 
   dependencyLibrary.stopTogglTimer = async function stopTogglTimer(id) {
     const fetchRequest = new URL.FetchRequest();
@@ -117,16 +123,17 @@
     if (r.statusCode !== 200) {
       throw buildErrorObject(r);
     }
-
-    return JSON.parse(r.bodyString).data;
+    // modified to cut '.data' from the return value
+    return JSON.parse(r.bodyString);
   };
 
   dependencyLibrary.createTogglProject = async function createTogglProject(
+    workspaceId,
     name,
   ) {
     const fetchRequest = new URL.FetchRequest();
     fetchRequest.bodyData = Data.fromString(
-      JSON.stringify({ project: { name } }),
+      JSON.stringify({ active: true, project: { name } }),
     );
     fetchRequest.method = 'POST';
     fetchRequest.headers = {
@@ -135,15 +142,16 @@
     };
     fetchRequest.url = URL.fromString(
       // TODO: Migrate v8 to v9
-      `${TOGGL_URL}/projects`,
+      // DONE: Migrate v8 to v9
+      `${TOGGL_URL}/workspaces/${workspaceId}/projects`,
     );
     const r = await fetchRequest.fetch();
 
     if (r.statusCode !== 200) {
       throw buildErrorObject(r);
     }
-
-    return JSON.parse(r.bodyString).data;
+    // modified to cut '.data' from the return value
+    return JSON.parse(r.bodyString);
   };
 
   dependencyLibrary.getTogglProjects = async function getTogglProjects() {
@@ -155,6 +163,7 @@
     };
     fetchRequest.url = URL.fromString(
       // TODO: Migrate v8 to v9
+      // DONE: unnecessary
       `${TOGGL_URL}/me?with_related_data=true`,
     );
     const r = await fetchRequest.fetch();
@@ -162,8 +171,9 @@
     if (r.statusCode !== 200) {
       throw buildErrorObject(r);
     }
-
-    return JSON.parse(r.bodyString).data.projects;
+    // modified to cut '.data' from the return value
+    // return JSON.parse(r.bodyString).projects;
+    return JSON.parse(r.bodyString);
   };
 
   dependencyLibrary.log = async function log(message, title = 'Log') {
