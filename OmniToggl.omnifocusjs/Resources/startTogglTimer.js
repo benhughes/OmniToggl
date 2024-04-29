@@ -68,7 +68,6 @@
       const taskTags = source.tags.map((t) => t.name);
 
       try {
-        // fix to add start time
         const r = await startTogglTimer({
           description: taskName,
           created_with: 'omnifocus',

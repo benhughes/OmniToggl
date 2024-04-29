@@ -10,8 +10,6 @@
   // Replace this if you would like something different
   const TRACKING_NAME_PREFIX = '🎯';
 
-  // TODO: Migrate v8 to v9
-  // DONE: Migrate v8 to v9
   const TOGGL_URL = 'https://api.track.toggl.com/api/v9';
 
   // the following is a pollyfill for base64 taken from https://github.com/MaxArt2501/base64-js/blob/master/base64.js
@@ -65,8 +63,6 @@
       'Content-Type': 'application/json',
     };
     fetchRequest.url = URL.fromString(
-      // TODO: Migrate v8 to v9
-      // DONE: Migrate v8 to v9
       `${TOGGL_URL}/workspaces/${timeEntry.workspace_id}/time_entries`,
     );
     const r = await fetchRequest.fetch();
@@ -88,11 +84,7 @@
         Authorization: AuthHeader,
         'Content-Type': 'application/json',
       };
-      fetchRequest.url = URL.fromString(
-        // TODO: Migrate v8 to v9
-        // DONE: Migrate v8 to v9
-        `${TOGGL_URL}/me/time_entries/current`,
-      );
+      fetchRequest.url = URL.fromString(`${TOGGL_URL}/me/time_entries/current`);
       const r = await fetchRequest.fetch();
 
       if (r.statusCode !== 200) {
@@ -114,8 +106,6 @@
       'Content-Type': 'application/json',
     };
     fetchRequest.url = URL.fromString(
-      // TODO: Migrate v8 to v9
-      // DONE: Migrate v8 to v9
       `${TOGGL_URL}/workspaces/${workspaceId}/time_entries/${id}/stop`,
     );
     const r = await fetchRequest.fetch();
@@ -141,8 +131,6 @@
       'Content-Type': 'application/json',
     };
     fetchRequest.url = URL.fromString(
-      // TODO: Migrate v8 to v9
-      // DONE: Migrate v8 to v9
       `${TOGGL_URL}/workspaces/${workspaceId}/projects`,
     );
     const r = await fetchRequest.fetch();
@@ -161,11 +149,7 @@
       Authorization: AuthHeader,
       'Content-Type': 'application/json',
     };
-    fetchRequest.url = URL.fromString(
-      // TODO: Migrate v8 to v9
-      // DONE: unnecessary
-      `${TOGGL_URL}/me?with_related_data=true`,
-    );
+    fetchRequest.url = URL.fromString(`${TOGGL_URL}/me?with_related_data=true`);
     const r = await fetchRequest.fetch();
 
     if (r.statusCode !== 200) {
