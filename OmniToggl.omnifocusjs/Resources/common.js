@@ -10,7 +10,7 @@
   // Replace this if you would like something different
   const TRACKING_NAME_PREFIX = '🎯';
 
-  const TOGGL_URL = 'https://api.track.toggl.com/api/v8';
+  const TOGGL_URL = 'https://api.track.toggl.com/api/v9';
 
   // the following is a pollyfill for base64 taken from https://github.com/MaxArt2501/base64-js/blob/master/base64.js
   function btoa(stringParam) {
@@ -55,18 +55,15 @@
     timeEntry,
   ) {
     const fetchRequest = new URL.FetchRequest();
-    fetchRequest.bodyData = Data.fromString(
-      JSON.stringify({
-        time_entry: timeEntry,
-      }),
-    );
+    // modified to json data format
+    fetchRequest.bodyData = Data.fromString(JSON.stringify(timeEntry));
     fetchRequest.method = 'POST';
     fetchRequest.headers = {
       Authorization: AuthHeader,
       'Content-Type': 'application/json',
     };
     fetchRequest.url = URL.fromString(
-      `${TOGGL_URL}/time_entries/start`,
+      `${TOGGL_URL}/workspaces/${timeEntry.workspace_id}/time_entries`,
     );
     const r = await fetchRequest.fetch();
 
@@ -74,55 +71,59 @@
       throw buildErrorObject(r);
     }
 
-    return JSON.parse(r.bodyString).data;
+    // modified to cut '.data' from the return value
+    return JSON.parse(r.bodyString);
   };
 
-  dependencyLibrary.getCurrentTogglTimer = async function getCurrentTogglTimer() {
+  dependencyLibrary.getCurrentTogglTimer =
+    async function getCurrentTogglTimer() {
+      const fetchRequest = new URL.FetchRequest();
+
+      fetchRequest.method = 'GET';
+      fetchRequest.headers = {
+        Authorization: AuthHeader,
+        'Content-Type': 'application/json',
+      };
+      fetchRequest.url = URL.fromString(`${TOGGL_URL}/me/time_entries/current`);
+      const r = await fetchRequest.fetch();
+
+      if (r.statusCode !== 200) {
+        throw buildErrorObject(r);
+      }
+      // modified to cut '.data' from the return value
+      return JSON.parse(r.bodyString);
+    };
+
+  dependencyLibrary.stopTogglTimer = async function stopTogglTimer(
+    workspaceId,
+    id,
+  ) {
     const fetchRequest = new URL.FetchRequest();
 
-    fetchRequest.method = 'GET';
+    fetchRequest.method = 'PATCH';
     fetchRequest.headers = {
       Authorization: AuthHeader,
       'Content-Type': 'application/json',
     };
     fetchRequest.url = URL.fromString(
-      `${TOGGL_URL}/time_entries/current`,
+      `${TOGGL_URL}/workspaces/${workspaceId}/time_entries/${id}/stop`,
     );
     const r = await fetchRequest.fetch();
 
     if (r.statusCode !== 200) {
       throw buildErrorObject(r);
     }
-
-    return JSON.parse(r.bodyString).data;
-  };
-
-  dependencyLibrary.stopTogglTimer = async function stopTogglTimer(id) {
-    const fetchRequest = new URL.FetchRequest();
-
-    fetchRequest.method = 'PUT';
-    fetchRequest.headers = {
-      Authorization: AuthHeader,
-      'Content-Type': 'application/json',
-    };
-    fetchRequest.url = URL.fromString(
-      `${TOGGL_URL}/time_entries/${id}/stop`,
-    );
-    const r = await fetchRequest.fetch();
-
-    if (r.statusCode !== 200) {
-      throw buildErrorObject(r);
-    }
-
-    return JSON.parse(r.bodyString).data;
+    // modified to cut '.data' from the return value
+    return JSON.parse(r.bodyString);
   };
 
   dependencyLibrary.createTogglProject = async function createTogglProject(
+    workspaceId,
     name,
   ) {
     const fetchRequest = new URL.FetchRequest();
     fetchRequest.bodyData = Data.fromString(
-      JSON.stringify({ project: { name } }),
+      JSON.stringify({ active: true, project: { name } }),
     );
     fetchRequest.method = 'POST';
     fetchRequest.headers = {
@@ -130,15 +131,15 @@
       'Content-Type': 'application/json',
     };
     fetchRequest.url = URL.fromString(
-      `${TOGGL_URL}/projects`,
+      `${TOGGL_URL}/workspaces/${workspaceId}/projects`,
     );
     const r = await fetchRequest.fetch();
 
     if (r.statusCode !== 200) {
       throw buildErrorObject(r);
     }
-
-    return JSON.parse(r.bodyString).data;
+    // modified to cut '.data' from the return value
+    return JSON.parse(r.bodyString);
   };
 
   dependencyLibrary.getTogglProjects = async function getTogglProjects() {
@@ -148,16 +149,15 @@
       Authorization: AuthHeader,
       'Content-Type': 'application/json',
     };
-    fetchRequest.url = URL.fromString(
-      `${TOGGL_URL}/me?with_related_data=true`,
-    );
+    fetchRequest.url = URL.fromString(`${TOGGL_URL}/me?with_related_data=true`);
     const r = await fetchRequest.fetch();
 
     if (r.statusCode !== 200) {
       throw buildErrorObject(r);
     }
-
-    return JSON.parse(r.bodyString).data.projects;
+    // modified to cut '.data' from the return value
+    // return JSON.parse(r.bodyString).projects;
+    return JSON.parse(r.bodyString);
   };
 
   dependencyLibrary.log = async function log(message, title = 'Log') {
