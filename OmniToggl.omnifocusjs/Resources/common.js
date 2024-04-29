@@ -57,12 +57,8 @@
     timeEntry,
   ) {
     const fetchRequest = new URL.FetchRequest();
-    fetchRequest.bodyData = Data.fromString(
-      JSON.stringify({
-        //        time_entry: timeEntry,
-        timeEntry,
-      }),
-    );
+    // modified to json data format
+    fetchRequest.bodyData = Data.fromString(JSON.stringify(timeEntry));
     fetchRequest.method = 'POST';
     fetchRequest.headers = {
       Authorization: AuthHeader,

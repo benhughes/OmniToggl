@@ -70,12 +70,14 @@
       const taskTags = source.tags.map((t) => t.name);
 
       try {
+        // fix to add start time
         const r = await startTogglTimer({
           description: taskName,
           created_with: 'omnifocus',
           tags: taskTags,
           project_id: pid,
           workspace_id: workspaceId,
+          start: new Date().toISOString(),
         });
         source.name = TRACKING_NAME_PREFIX + source.name;
         source.addTag(trackingTag);
