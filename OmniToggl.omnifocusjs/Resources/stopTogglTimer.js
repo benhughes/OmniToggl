@@ -1,17 +1,17 @@
 (() => {
   // Main action
   const action = new PlugIn.Action(async function stopTogglTimerAction() {
-    const {
-      getCurrentTogglTimer,
-      stopTogglTimer,
-      resetTasks,
-      log,
-    } = this.common;
+    const { getCurrentTogglTimer, stopTogglTimer, resetTasks, log } =
+      this.common;
 
     try {
       const currentTimer = await getCurrentTogglTimer();
       if (currentTimer) {
-        await stopTogglTimer(currentTimer.id);
+        const r = await stopTogglTimer(
+          currentTimer.workspace_id,
+          currentTimer.id,
+        );
+        console.log('Timer stopped successfully', JSON.stringify(r));
       }
       resetTasks();
     } catch (e) {
