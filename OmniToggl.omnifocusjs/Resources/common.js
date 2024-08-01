@@ -123,7 +123,7 @@
   ) {
     const fetchRequest = new URL.FetchRequest();
     fetchRequest.bodyData = Data.fromString(
-      JSON.stringify({ active: true, project: { name } }),
+      JSON.stringify({ active: true, name }),
     );
     fetchRequest.method = 'POST';
     fetchRequest.headers = {
